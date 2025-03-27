@@ -12,6 +12,6 @@ namespace TaskManagementSystem.Data
         {
         }
 
-        public DbSet<TaskItem> Tasks { get; set; }
+        public DbSet<TaskItem> Tasks { get; set; } // DbSet for Task Items
     }
 }

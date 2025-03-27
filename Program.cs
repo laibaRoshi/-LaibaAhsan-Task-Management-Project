@@ -1,40 +1,39 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Data;
+using TaskManagementSystem.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Configure SQL Server connection
+// Register DbContext
 builder.Services.AddDbContext<TaskManagementDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+// Register Identity
+builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<TaskManagementDbContext>()
     .AddDefaultTokenProviders();
 
-// Cookie Settings for Authentication
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/Account/Login"; // Redirect to Login if not authenticated
-    options.AccessDeniedPath = "/Account/AccessDenied"; // Redirect if access denied
-});
-
-// Build the app
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage(); // Show detailed errors in dev
-}
-else
-{
-    app.UseExceptionHandler("/Home/Error"); // Redirect to error page
-    app.UseHsts(); // Enable HSTS for security
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
 }
 
-app.UseHttpsRedirection(); // Redirect HTTP to HTTPS
-app.UseStaticFiles(); // Enable serving static files (CSS, JS)
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+app.UseAuthentication();  // Enable Authentication
+app.UseAuthorization();   // Enable Authorization
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Account}/{action=Login}/{id?}");
+app.Run();
